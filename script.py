@@ -24,7 +24,7 @@ def extract_item_info(orders):
         for item in order.get('items', []):
             item_name = item['name']
             item_price = item['price']
-            # Only set the price the first time we encounter the item
+            # Set price only if it's not already set
             if item_data[item_name]['price'] == 0:
                 item_data[item_name]['price'] = item_price
             item_data[item_name]['count'] += 1
@@ -37,15 +37,20 @@ def save_to_json(file_name, data):
 
 def main(input_file):
     """Main function to process orders and create output files."""
-    orders = load_orders(input_file)
-    customer_info = extract_customer_info(orders)
-    item_info = extract_item_info(orders)
+    try:
+        orders = load_orders(input_file)
+        customer_info = extract_customer_info(orders)
+        item_info = extract_item_info(orders)
 
-    save_to_json('customers.json', customer_info)
-    save_to_json('items.json', item_info)
+        save_to_json('customers.json', customer_info)
+        save_to_json('items.json', item_info)
+        print("Data has been processed and saved successfully.")
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error reading the file: {e}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python script.py <path_to_orders_json>")
-    else:
-        main(sys.argv[1])
+        sys.exit(1)
+    
+    main(sys.argv[1])
